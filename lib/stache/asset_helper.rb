@@ -9,13 +9,21 @@ module Stache
           if ActionPack::VERSION::MAJOR == 3 && ActionPack::VERSION::MINOR < 2
             lookup_context.find(source, [], partial)
           else # Rails 3.2 and higher
-            lookup_context.find(source, [], partial, [], { formats: [:html] })
+            lookup_context.find(source, [], partial, [], { formats: [:html], handlers: [Stache.template_engine] })
           end
         end
 
         template = template_finder.call(true) rescue template_finder.call(false)
         template_id = (Stache.include_path_in_id) ? source.gsub("/", '_') : source.to_s.split("/").last
-        content_tag(:script, template.source.html_safe, options.reverse_merge(type: 'text/html', id: template_id.dasherize.underscore))
+
+        source = case Stache.template_engine
+        when :hamstache
+          Haml::Engine.new(template.source).render(self)
+        else
+          template.source
+        end
+
+        content_tag(:script, source.html_safe, options.reverse_merge(type: Stache.template_mime, id: "#{Stache.id_prefix}#{template_id.dasherize.underscore}"))
 
       end.join("\n").html_safe
     end

@@ -7,6 +7,10 @@ module Stache
     class View < ::Mustache
       attr_accessor :view, :virtual_path
 
+      def self.template_extension
+        Stache.template_extension
+      end
+
       def context
         # Use the faster context instead of the original mustache one
         @context ||= FasterContext.new(self)
