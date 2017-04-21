@@ -8,4 +8,4 @@ module Stache
 end
 
 ActionView::Template.register_template_handler :rb, Stache::Mustache::Handler
-ActionView::Template.register_template_handler :mustache, Stache::Mustache::Handler
+ActionView::Template.register_template_handler Stache.template_engine, Stache::Mustache::Handler

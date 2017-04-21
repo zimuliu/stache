@@ -41,11 +41,18 @@ module Stache
         # Try to resolve template from cache
         template_cached = ::Stache.template_cache.read(cache_key, :namespace => :partials, :raw => true)
         curr_template   = template_cached || Stache::Mustache::CachedTemplate.new(
-          begin # Try to resolve the partial template
-            template_finder(name, true)
-          rescue ActionView::MissingTemplate
-            template_finder(name, false)
-          end.source
+          begin
+            source = begin # Try to resolve the partial template
+                       template_finder(name, true)
+                     rescue ActionView::MissingTemplate
+                       template_finder(name, false)
+                     end.source
+            if Stache.template_engine == :hamstache
+               Haml::Engine.new(source).render(helpers)
+            else
+              source
+            end
+          end
         )
 
         # Store the template
@@ -73,7 +80,7 @@ module Stache
         if ActionPack::VERSION::MAJOR == 3 && ActionPack::VERSION::MINOR < 2
           lookup_context.find(name, [], partial)
         else # Rails 3.2 and higher
-          lookup_context.find(name, [], partial, [], { formats: [:html], handlers: [:mustache] })
+          lookup_context.find(name, [], partial, [], { formats: [:html], handlers: [Stache.template_engine] })
         end
       end
 

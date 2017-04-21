@@ -25,6 +25,8 @@ module Stache
         template_is_class = template.source.match(/module/) ? true : false
         virtual_path      = template.virtual_path.to_s
 
+        use_haml = Stache.template_engine == :hamstache
+
         # Caching key
         template_id = "#{template.identifier.to_s}#{template.updated_at.to_i}"
 
@@ -60,12 +62,19 @@ module Stache
           # Try to get template from cache, otherwise use template source
           template_cached   = ::Stache.template_cache.read(:'#{template_id}', :namespace => :templates, :raw => true)
           mustache.template = template_cached || Stache::Mustache::CachedTemplate.new(
-            if #{template_is_class}
-              template_name = "#{virtual_path}"
-              file = Dir.glob(File.join(::Stache.template_base_path, template_name + "\.*" + mustache.template_extension)).first
-              File.read(file)
-            else
-              '#{template.source.gsub(/'/, "\\\\'")}'
+            begin
+              source = if #{template_is_class}
+                template_name = "#{virtual_path}"
+                file = Dir.glob(File.join(::Stache.template_base_path, template_name + "\.*" + mustache.template_extension)).first
+                File.read(file)
+              else
+                '#{template.source.gsub(/'/, "\\\\'")}'
+              end
+              if #{use_haml}
+                Haml::Engine.new(source).render(mustache.helpers)
+              else
+                source
+              end
             end
           )
 

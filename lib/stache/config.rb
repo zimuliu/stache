@@ -26,7 +26,11 @@ module Stache
     end
 
     def template_extension
-      @template_extension ||= 'html.mustache'
+      @template_extension ||= case @template_engine
+                              when :mustache then 'html.mustache'
+                              when :hamstache then 'html.hamstache'
+                              when :handlebars then 'html.hbs'
+                              end
     end
 
     def template_extension= value
@@ -34,7 +38,12 @@ module Stache
     end
 
     def template_base_class
-      @template_base_class ||= '::Stache::Mustache::View'
+      @template_base_class ||= case template_engine
+                               when :mustache, :hamstache
+                                 '::Stache::Mustache::View'
+                               when :handlebars
+                                 '::Stache::Handlebars::View'
+                               end
     end
 
     def template_base_class= value
@@ -75,7 +84,14 @@ module Stache
 
     def use template_engine
       @template_engine = template_engine
-      require "stache/#{template_engine}"
+      case template_engine
+      when :mustache, :hamstache
+        require "stache/mustache"
+      when :handlebars
+        require "stache/handlebars"
+      else
+        raise "Unknown template engine: #{template_engine}"
+      end
     end
   end
 end
