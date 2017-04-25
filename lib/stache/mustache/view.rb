@@ -36,7 +36,7 @@ module Stache
 
       # Redefine where Stache::View templates locate their partials
       def partial(name)
-        cache_key = :"#{virtual_path}/#{name}"
+        cache_key = :"#{virtual_path}/#{name}#{I18n.locale}"
 
         # Try to resolve template from cache
         template_cached = ::Stache.template_cache.read(cache_key, :namespace => :partials, :raw => true)

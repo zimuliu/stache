@@ -28,7 +28,7 @@ module Stache
         use_haml = Stache.template_engine == :hamstache
 
         # Caching key
-        template_id = "#{template.identifier.to_s}#{template.updated_at.to_i}"
+        template_id = "#{template.identifier.to_s}#{template.updated_at.to_i}#{I18n.locale}"
 
         # Return a string that will be eval'd in the context of the ActionView, ugly, but it works.
         <<-MUSTACHE

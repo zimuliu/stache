@@ -18,7 +18,15 @@ module Stache
 
         source = case Stache.template_engine
         when :hamstache
-          Haml::Engine.new(template.source).render(self)
+          template_cache_key = "#{template.identifier.to_s}#{template.updated_at.to_i}#{I18n.locale}"
+          template_cached = ::Stache.template_cache.read(template_cache_key, namespace: :template_assets, raw: true)
+          if template_cached
+            template_cached
+          else
+            compiled_source = Haml::Engine.new(template.source).render(self)
+            ::Stache.template_cache.write(template_cache_key, compiled_source, namespace: :template_assets, raw: true)
+            compiled_source
+          end
         else
           template.source
         end
